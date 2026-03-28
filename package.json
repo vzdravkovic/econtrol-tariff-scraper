@@ -1,0 +1,16 @@
+{
+  "name": "econtrol-tariff-scraper",
+  "version": "1.0.0",
+  "description": "Scrapes all electricity and gas tariffs from the Austrian E-Control Tarifkalkulator API",
+  "main": "scrape_econtrol_tariffs.js",
+  "scripts": {
+    "scrape": "node scrape_econtrol_tariffs.js",
+    "scrape:power": "node scrape_econtrol_tariffs.js --energy POWER",
+    "scrape:gas": "node scrape_econtrol_tariffs.js --energy GAS",
+    "scrape:pdfs": "node scrape_econtrol_tariffs.js --download-pdfs ./data/preisblatter"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
