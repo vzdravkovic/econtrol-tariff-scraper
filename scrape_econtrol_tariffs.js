@@ -223,27 +223,31 @@ function normaliseGridCosts(product, gridOp, consumptionKwh, scrapedAt) {
     grid_operator_name: gridOp.name,
     consumption_kwh: consumptionKwh,
 
-    // All values from API are in Cent/year, BRUTTO (inkl. 20% MwSt)
-    // Grid network charges
-    grid_base_rate_gross_eur_month:  centToEurMonth(gc.gridBaseRate),
-    grid_usage_rate_gross_ct_kwh:    centToCtKwh(gc.gridUsageRate),
-    grid_loss_rate_gross_ct_kwh:     centToCtKwh(gc.gridLossRate),
-    meter_rate_gross_eur_month:      centToEurMonth(gc.meterRateNetSum),
-    grid_costs_total_gross_eur_year: gc.gridCostsNetSum != null ? +(gc.gridCostsNetSum / 100).toFixed(2) : null,
+    // All calculatedGridCosts values from the API are in Cent/year, NETTO (excl. 20% MwSt).
+    // GROSS (inkl. 20% MwSt) is derived by multiplying NETTO × 1.20.
+    // Grid network charges — NETTO (API source)
+    grid_base_rate_netto_eur_month:  centToEurMonth(gc.gridBaseRate),
+    grid_usage_rate_netto_ct_kwh:    centToCtKwh(gc.gridUsageRate),
+    grid_loss_rate_netto_ct_kwh:     centToCtKwh(gc.gridLossRate),
+    meter_rate_netto_eur_month:      centToEurMonth(gc.meterRateNetSum),
+    grid_costs_total_netto_eur_year: gc.gridCostsNetSum != null ? +(gc.gridCostsNetSum / 100).toFixed(2) : null,
 
-    // NETTO equivalents (÷1.20)
-    grid_base_rate_netto_eur_month:  gc.gridBaseRate   != null ? +(gc.gridBaseRate   / 100 / 12 / 1.2).toFixed(4) : null,
-    grid_usage_rate_netto_ct_kwh:    gc.gridUsageRate  != null && consumptionKwh > 0 ? +(gc.gridUsageRate  / consumptionKwh / 1.2).toFixed(6) : null,
-    grid_loss_rate_netto_ct_kwh:     gc.gridLossRate   != null && consumptionKwh > 0 ? +(gc.gridLossRate   / consumptionKwh / 1.2).toFixed(6) : null,
-    meter_rate_netto_eur_month:      gc.meterRateNetSum != null ? +(gc.meterRateNetSum / 100 / 12 / 1.2).toFixed(4) : null,
+    // Grid network charges — GROSS (×1.20)
+    grid_base_rate_gross_eur_month:  gc.gridBaseRate   != null ? +(gc.gridBaseRate   / 100 / 12 * 1.2).toFixed(4) : null,
+    grid_usage_rate_gross_ct_kwh:    gc.gridUsageRate  != null && consumptionKwh > 0 ? +(gc.gridUsageRate  / consumptionKwh * 1.2).toFixed(6) : null,
+    grid_loss_rate_gross_ct_kwh:     gc.gridLossRate   != null && consumptionKwh > 0 ? +(gc.gridLossRate   / consumptionKwh * 1.2).toFixed(6) : null,
+    meter_rate_gross_eur_month:      gc.meterRateNetSum != null ? +(gc.meterRateNetSum / 100 / 12 * 1.2).toFixed(4) : null,
+    grid_costs_total_gross_eur_year: gc.gridCostsNetSum != null ? +(gc.gridCostsNetSum / 100 * 1.2).toFixed(2) : null,
 
     // Taxes & levies (Abgaben) — individual breakdown
-    taxes_total_gross_eur_year: gc.gridFeeNetSum != null ? +(gc.gridFeeNetSum / 100).toFixed(2) : null,
+    // fee.value is NETTO; gross = netto × 1.20
+    taxes_total_netto_eur_year: gc.gridFeeNetSum != null ? +(gc.gridFeeNetSum / 100).toFixed(2) : null,
+    taxes_total_gross_eur_year: gc.gridFeeNetSum != null ? +(gc.gridFeeNetSum / 100 * 1.2).toFixed(2) : null,
     taxes: (gc.calculatedFees || []).map(fee => ({
       fee_id: fee.id,
       name: fee.name,
-      gross_eur_year: +(fee.value / 100).toFixed(4),
-      netto_eur_year: +(fee.value / 100 / 1.2).toFixed(4),
+      netto_eur_year: +(fee.value / 100).toFixed(4),
+      gross_eur_year: +(fee.value / 100 * 1.2).toFixed(4),
       applied_to_energy_rate: fee.appliedToEnergyRate,
       proportional_rate: fee.proportionalRate || null,
     })),
